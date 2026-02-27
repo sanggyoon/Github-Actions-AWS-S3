@@ -1,10 +1,32 @@
-name: CI/CD
+name: Sync to S3
+
 on:
   push:
     branches:
       - main
+
 jobs:
-  cicd:
+  sync:
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo hello-world,cicd
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2 # Change this to your region of your bucket
+
+      - name: Deploy to S3
+        run: |
+          echo "Syncing specific files to S3..."
+          aws s3 cp . s3://sg0227-github-actions-s3 \
+            --recursive \
+            --exclude "*" \
+            --include "*.html" \
+            --include "*.css" \
+            --include "*.js"
+          echo "Deployment complete."
